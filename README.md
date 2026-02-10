@@ -95,7 +95,7 @@ You can revoke the MCP server's access at any time:
 2. Find "Connected Apps"
 3. Click "Revoke" next to "Reaudit MCP Server"
 
-## Available Tools (61 total)
+## Available Tools (80 total)
 
 ### Project Tools
 
@@ -104,6 +104,13 @@ You can revoke the MCP server's access at any time:
 | `list_projects` | List all projects in your Reaudit account |
 | `set_active_project` | Set the active project context for subsequent commands |
 | `get_active_project` | Get the currently active project |
+
+### Project Settings Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_project_settings` | Get all settings for a project including brand info, writing style, social media, competitors, author card, and more |
+| `update_project_settings` | Update project settings including brand name, description, writing style, social media links, competitors, author card, industry, language, and more |
 
 ### Account Tools
 
@@ -179,6 +186,19 @@ You can revoke the MCP server's access at any time:
 | `get_strategy_content_items` | Get content items from a strategy's 90-day content calendar |
 | `update_content_item_status` | Update a content item's status, notes, topic, platform, or planned date |
 
+### Strategy Step Runner Tools
+
+Run GTM strategies step-by-step through the AI assistant. Each step uses Perplexity deep search and builds on previous outputs progressively.
+
+| Tool | Description |
+|------|-------------|
+| `generate_strategy_step` | Generate AI content for a specific module step. Supports additional context for guided regeneration. Costs credits per generation. |
+| `get_strategy_step_output` | Read the full generated output of any step, including content, citations, and edit history |
+| `edit_strategy_step` | Edit/refine the content of a completed step. Edits are saved separately from the original AI output. |
+| `get_strategy_step_map` | Get a reference map of all 6 modules (21 steps), dependencies, and recommended workflow |
+
+**Modules:** 1=Research (3 steps), 2=Strategy (3), 3=Content Strategy (3), 4=Funnel (4), 5=Execution (3), 6=Offer (5)
+
 ### Sources & Outreach Tools
 
 | Tool | Description |
@@ -252,6 +272,51 @@ You can revoke the MCP server's access at any time:
 | `delete_action_grid` | Delete an action grid |
 | `add_grid_items` | Add new items to an existing action grid |
 | `update_grid_item` | Update status, priority, assignee, or notes of an action grid item |
+
+### AI Bot Crawl Analytics
+
+| Tool | Description |
+|------|-------------|
+| `get_agent_analytics` | Get AI bot crawl analytics: which bots (GPTBot, ClaudeBot, PerplexityBot) visit your site, top crawled pages, cited domains, and content topics |
+
+### Site Tracking Tools
+
+Track AI referral performance and bot crawl activity across WordPress, Webflow, and Wix sites.
+
+| Tool | Description |
+|------|-------------|
+| `get_ai_referral_performance` | Get AI referral performance for WordPress articles — which articles get traffic from ChatGPT, Perplexity, etc. |
+| `get_page_citations` | Get page citations — which pages are crawled by LLM bots, how often, and by which bots |
+| `get_webflow_tracking` | Get Webflow site bot tracking analytics with bot type breakdown and top crawled pages |
+| `get_wix_tracking` | Get Wix site bot tracking analytics with bot type breakdown and top crawled pages |
+
+### Competitor Management Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_competitors` | List tracked competitors with filtering by category, search, and pagination |
+| `add_competitor` | Add a new competitor to track (name, URL, category, industry, tags) |
+| `delete_competitor` | Delete (deactivate) a tracked competitor by ID |
+
+### Reddit Lead Monitoring Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_reddit_monitors` | List monitored subreddits for a project with keywords, stats, and activity |
+| `get_reddit_leads` | Get Reddit leads identified from monitored subreddits, filter by status and score |
+| `update_reddit_lead` | Update a Reddit lead status (new, contacted, qualified, converted, dismissed) |
+
+### GA4 Analytics Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_ga4_analytics` | Get Google Analytics 4 data: traffic overview, sources, top pages, timeseries, and AI referral traffic |
+
+### SEO Alert Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_seo_alerts` | Get SEO alerts — visibility drops, crawl issues, ranking changes, or aggregated summary |
 
 ## Available Prompts (5 templates)
 
@@ -344,6 +409,41 @@ Read-only data accessible via `reaudit://` URIs:
 > - Visualization: line chart
 >
 > You can run this report anytime with `get_report`.
+
+### Read and update project settings
+> **You:** Show me my project settings
+>
+> **Assistant:** Here are your project settings for "My Brand":
+> - Brand Name: My Brand
+> - Main Keyword: AI visibility
+> - Alternative Keywords: SEO automation, brand monitoring
+> - Industry: SaaS
+> - Language: English
+>
+> **You:** Update my brand description to "We help businesses track their AI visibility" and add "AI ranking" as an alternative keyword
+>
+> **Assistant:** Project settings updated successfully! Updated fields: settings.brandDescription, settings.alternativeKeywords
+
+### Run a GTM strategy step-by-step
+> **You:** Show me the GTM strategy step map
+>
+> **Assistant:** Here are the 6 modules and 21 steps:
+> - Module 1: Research Layer (ICP Deep Dive, Competitive Intelligence, Market Trends)
+> - Module 2: Strategy Layer (Positioning, GTM Motion, Messaging)
+> - ...
+>
+> **You:** Generate the ICP Deep Dive for strategy abc123, focus on enterprise customers
+>
+> **Assistant:** Generated! Module 1 > ICP Deep Dive is complete. Here's the content...
+> Next step: Competitive Intelligence (module 1, step 2).
+>
+> **You:** That looks good. Now generate the next step.
+>
+> **Assistant:** Generated! Module 1 > Competitive Intelligence is complete with 8 citations...
+>
+> **You:** Edit the ICP Deep Dive to add a section about mid-market companies
+>
+> **Assistant:** Step content updated. Use `get_strategy_step_output` to view the full content.
 
 ### Search your knowledge base
 > **You:** What do we say about pricing on our website?

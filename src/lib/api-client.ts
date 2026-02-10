@@ -26,6 +26,105 @@ export interface Project {
   updatedAt: string;
 }
 
+export interface ProjectSettings {
+  // General
+  defaultDomain: string | null;
+  defaultLocation: string | null;
+  timezone: string | null;
+  language: string | null;
+  industry: string | null;
+  country: string | null;
+  regions: string[];
+
+  // Brand
+  brandName: string | null;
+  brandAliases: string[];
+  products: string[];
+  trademarks: string[];
+  brandBlocklist: string[];
+  website: string | null;
+  description: string | null;
+  brandDescription: string | null;
+  idealCustomerProfile: string | null;
+  brandPointOfView: string | null;
+  mainKeyword: string | null;
+  alternativeKeywords: string[];
+  mainAiPrompt: string | null;
+  targetMarket: string | null;
+  marketingObjectives: string | null;
+  sitemap: string | null;
+
+  // Writing Style
+  writingStyle: {
+    authorPersona?: string;
+    enhancedToneOfVoice?: string;
+  } | null;
+
+  // Logo & Branding
+  logo: string | null;
+  favicon: string | null;
+
+  // Social Media
+  socialMedia: {
+    facebook?: string;
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+    youtube?: string;
+    tiktok?: string;
+    pinterest?: string;
+    github?: string;
+  } | null;
+
+  // Address & Contact
+  address: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  } | null;
+  phone: string | null;
+  email: string | null;
+
+  // Competitors
+  competitors: Array<string | {
+    name: string;
+    aliases?: string[];
+    products?: string[];
+    trademarks?: string[];
+    website?: string;
+  }>;
+
+  // Reporting
+  reporting: {
+    enabled: boolean;
+    frequency: string;
+    email?: string;
+    includeMetrics: {
+      rankings: boolean;
+      aiVisibility: boolean;
+      competitors: boolean;
+      keywords: boolean;
+      trafficEstimates: boolean;
+    };
+  } | null;
+
+  // Author Card
+  authorCard: {
+    enabled: boolean;
+    name: string;
+    title?: string;
+    bio?: string;
+    avatarUrl?: string;
+    socialLinks?: Array<{
+      platform: string;
+      url: string;
+      label?: string;
+    }>;
+  } | null;
+}
+
 export interface AccountInfo {
   user: {
     id: string;
@@ -477,6 +576,33 @@ export class ReauditAPIClient {
     return this.request('GET', '/projects');
   }
   
+  async getProjectSettings(projectId: string): Promise<{
+    projectId: string;
+    projectName: string;
+    description: string | null;
+    favicon: string | null;
+    settings: ProjectSettings;
+  }> {
+    return this.request('GET', `/projects/${projectId}/settings`);
+  }
+  
+  async updateProjectSettings(
+    projectId: string,
+    data: {
+      name?: string;
+      description?: string;
+      settings?: Partial<ProjectSettings>;
+    }
+  ): Promise<{
+    projectId: string;
+    projectName: string;
+    description: string | null;
+    settings: ProjectSettings;
+    updatedFields: string[];
+  }> {
+    return this.request('PATCH', `/projects/${projectId}/settings`, data);
+  }
+  
   // ============ Account ============
   
   async getAccount(): Promise<AccountInfo> {
@@ -771,6 +897,81 @@ export class ReauditAPIClient {
       itemId,
       ...updates,
     });
+  }
+  
+  /**
+   * Generate AI content for a specific strategy module step.
+   * This triggers Perplexity deep search and synthesis for the given step.
+   */
+  async generateStrategyStep(
+    strategyId: string,
+    data: {
+      moduleNumber: number;
+      stepNumber: number;
+      additionalContext?: string;
+    }
+  ): Promise<{
+    content: string;
+    citations: Array<{ title: string; url: string; snippet?: string }>;
+    tokensUsed: number;
+    creditsUsed: number;
+    step: {
+      moduleNumber: number;
+      stepNumber: number;
+      moduleName: string;
+      stepName: string;
+      stepKey: string;
+      status: string;
+    };
+  }> {
+    return this.request('POST', `/strategies/${strategyId}/generate`, data);
+  }
+
+  /**
+   * Get the full output of a specific strategy step
+   */
+  async getStrategyStepOutput(
+    strategyId: string,
+    moduleNumber: number,
+    stepNumber: number
+  ): Promise<{
+    strategyId: string;
+    moduleNumber: number;
+    stepNumber: number;
+    stepId: string;
+    stepName: string;
+    status: string;
+    content: string | null;
+    originalContent: string | null;
+    hasBeenEdited: boolean;
+    citations: Array<{ title: string; url: string; snippet?: string }>;
+    generatedAt: string | null;
+    editedAt: string | null;
+  }> {
+    return this.request('GET', `/strategies/${strategyId}/steps`, undefined, {
+      module: moduleNumber.toString(),
+      step: stepNumber.toString(),
+    });
+  }
+
+  /**
+   * Edit the content of a specific strategy step
+   */
+  async editStrategyStep(
+    strategyId: string,
+    data: {
+      moduleNumber: number;
+      stepNumber: number;
+      content: string;
+    }
+  ): Promise<{
+    strategyId: string;
+    moduleNumber: number;
+    stepNumber: number;
+    stepKey: string;
+    message: string;
+  }> {
+    return this.request('PATCH', `/strategies/${strategyId}/steps`, data);
   }
   
   // ============ Content Generation ============
@@ -1274,6 +1475,193 @@ export class ReauditAPIClient {
     return this.request('PUT', `/action-grids/${gridId}/items`, { itemId, ...data });
   }
   
+  // ============ Agent Analytics (AI Bot Crawl Tracking) ============
+
+  /**
+   * Get AI bot crawl analytics including bot types, timeline, top pages, and cited domains
+   */
+  async getAgentAnalytics(params?: {
+    days?: number;
+    botType?: string;
+    limit?: number;
+  }): Promise<{
+    bots: { total: number; types: Array<{ type: string; count: number }> };
+    timeline: Array<{ date: string; count: number }>;
+    topPages: Array<{ page: string; count: number }>;
+    topCitedDomains: Array<{ domain: string; count: number }>;
+    topTopics: Array<{ topic: string; count: number }>;
+    trackedSites: Array<{ id: string; name: string; domain: string }>;
+    period: { days: number; since: string };
+  }> {
+    return this.request('GET', '/agent-analytics', undefined, {
+      ...(params?.days && { days: params.days.toString() }),
+      ...(params?.botType && { botType: params.botType }),
+      ...(params?.limit && { limit: params.limit.toString() }),
+    });
+  }
+
+  // ============ WordPress AI Tracking ============
+
+  /**
+   * Get WordPress AI referral performance data
+   */
+  async getWordPressReferralPerformance(params?: {
+    timeRange?: string;
+    projectId?: string;
+    limit?: number;
+  }): Promise<Record<string, unknown>> {
+    return this.request('GET', '/tracking/wordpress', undefined, {
+      type: 'referrals',
+      ...(params?.timeRange && { timeRange: params.timeRange }),
+      ...(params?.projectId && { projectId: params.projectId }),
+      ...(params?.limit && { limit: params.limit.toString() }),
+    });
+  }
+
+  /**
+   * Get WordPress page citations (pages crawled by LLM bots)
+   */
+  async getWordPressPageCitations(params?: {
+    projectId?: string;
+    limit?: number;
+  }): Promise<Record<string, unknown>> {
+    return this.request('GET', '/tracking/wordpress', undefined, {
+      type: 'citations',
+      ...(params?.projectId && { projectId: params.projectId }),
+      ...(params?.limit && { limit: params.limit.toString() }),
+    });
+  }
+
+  // ============ Webflow & Wix Tracking ============
+
+  /**
+   * Get Webflow bot tracking analytics
+   */
+  async getWebflowTracking(params?: {
+    timeRange?: string;
+    projectId?: string;
+  }): Promise<Record<string, unknown>> {
+    return this.request('GET', '/tracking/webflow', undefined, {
+      ...(params?.timeRange && { timeRange: params.timeRange }),
+      ...(params?.projectId && { projectId: params.projectId }),
+    });
+  }
+
+  /**
+   * Get Wix bot tracking analytics
+   */
+  async getWixTracking(params?: {
+    timeRange?: string;
+    projectId?: string;
+  }): Promise<Record<string, unknown>> {
+    return this.request('GET', '/tracking/wix', undefined, {
+      ...(params?.timeRange && { timeRange: params.timeRange }),
+      ...(params?.projectId && { projectId: params.projectId }),
+    });
+  }
+
+  // ============ Competitor Management ============
+
+  /**
+   * List competitors
+   */
+  async listCompetitors(params?: {
+    category?: string;
+    search?: string;
+    limit?: number;
+  }): Promise<{
+    competitors: Array<Record<string, unknown>>;
+    total: number;
+  }> {
+    return this.request('GET', '/competitors', undefined, {
+      ...(params?.category && { category: params.category }),
+      ...(params?.search && { search: params.search }),
+      ...(params?.limit && { limit: params.limit.toString() }),
+    });
+  }
+
+  /**
+   * Add a new competitor
+   */
+  async addCompetitor(data: {
+    name: string;
+    url: string;
+    category?: string;
+    industry?: string;
+    tags?: string[];
+    description?: string;
+  }): Promise<Record<string, unknown>> {
+    return this.request('POST', '/competitors', data);
+  }
+
+  /**
+   * Delete a competitor (soft delete)
+   */
+  async deleteCompetitor(competitorId: string): Promise<Record<string, unknown>> {
+    return this.request('DELETE', '/competitors', { competitorId });
+  }
+
+  // ============ Reddit Lead Monitoring ============
+
+  /**
+   * List monitored subreddits for a project
+   */
+  async listRedditMonitors(projectId: string): Promise<Record<string, unknown>> {
+    return this.request('GET', '/reddit', undefined, { projectId, type: 'monitors' });
+  }
+
+  /**
+   * Get Reddit leads for a project
+   */
+  async getRedditLeads(projectId: string, params?: {
+    status?: string;
+    minScore?: number;
+    limit?: number;
+  }): Promise<Record<string, unknown>> {
+    return this.request('GET', '/reddit', undefined, {
+      projectId,
+      type: 'leads',
+      ...(params?.status && { status: params.status }),
+      ...(params?.minScore && { minScore: params.minScore.toString() }),
+      ...(params?.limit && { limit: params.limit.toString() }),
+    });
+  }
+
+  /**
+   * Update a Reddit lead's status
+   */
+  async updateRedditLead(leadId: string, status: string, notes?: string): Promise<Record<string, unknown>> {
+    return this.request('PATCH', '/reddit', { leadId, status, ...(notes && { notes }) });
+  }
+
+  // ============ GA4 Analytics ============
+
+  /**
+   * Get GA4 analytics data for a project
+   */
+  async getGA4Analytics(projectId: string, params?: {
+    startDate?: string;
+    endDate?: string;
+    metrics?: string;
+  }): Promise<Record<string, unknown>> {
+    return this.request('GET', '/ga4', undefined, {
+      projectId,
+      type: 'analytics',
+      ...(params?.startDate && { startDate: params.startDate }),
+      ...(params?.endDate && { endDate: params.endDate }),
+      ...(params?.metrics && { metrics: params.metrics }),
+    });
+  }
+
+  // ============ SEO Alerts ============
+
+  /**
+   * Get SEO alerts (unread or summary)
+   */
+  async getSeoAlerts(type: 'unread' | 'summary' = 'unread'): Promise<Record<string, unknown>> {
+    return this.request('GET', '/alerts', undefined, { type });
+  }
+
   // ============ Auth ============
   
   isAuthenticated(): boolean {

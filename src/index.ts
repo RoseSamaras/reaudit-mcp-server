@@ -26,6 +26,13 @@ import { ReauditAPIClient } from './lib/api-client.js';
 // Project tools
 import { projectTools, listProjects, setActiveProject, getActiveProject } from './tools/projects.js';
 
+// Project settings tools
+import {
+  projectSettingsTools,
+  getProjectSettings,
+  updateProjectSettings,
+} from './tools/project-settings.js';
+
 // Account tools
 import { accountTools, getUsageSummary } from './tools/account.js';
 
@@ -82,6 +89,15 @@ import {
   getStrategyContentItems,
   updateContentItemStatus,
 } from './tools/strategy.js';
+
+// Strategy step tools (generate, read, edit steps)
+import {
+  strategyStepTools,
+  generateStrategyStep,
+  getStrategyStepOutput,
+  editStrategyStep,
+  getStrategyStepMap,
+} from './tools/strategy-steps.js';
 
 // Content generation tools
 import {
@@ -171,6 +187,49 @@ import {
   updateGridItem,
 } from './tools/action-grids.js';
 
+// Agent analytics (AI bot crawl tracking)
+import {
+  agentAnalyticsTools,
+  getAgentAnalytics,
+} from './tools/agent-analytics.js';
+
+// Site tracking tools (WordPress, Webflow, Wix)
+import {
+  trackingTools,
+  getAiReferralPerformance,
+  getPageCitations,
+  getWebflowTracking,
+  getWixTracking,
+} from './tools/tracking.js';
+
+// Competitor management tools
+import {
+  competitorTools,
+  listCompetitors,
+  addCompetitor,
+  deleteCompetitor,
+} from './tools/competitors.js';
+
+// Reddit lead monitoring tools
+import {
+  redditTools,
+  listRedditMonitors,
+  getRedditLeads,
+  updateRedditLead,
+} from './tools/reddit.js';
+
+// GA4 analytics tools
+import {
+  ga4Tools,
+  getGA4Analytics,
+} from './tools/ga4.js';
+
+// SEO alerts tools
+import {
+  seoAlertTools,
+  getSeoAlerts,
+} from './tools/seo-alerts.js';
+
 // Prompts
 import { mcpPrompts, generatePromptContent } from './prompts/index.js';
 
@@ -187,7 +246,7 @@ const apiClient = new ReauditAPIClient(BASE_URL);
 const server = new Server(
   {
     name: 'reaudit-mcp-server',
-    version: '1.0.0',
+    version: '1.3.0',
   },
   {
     capabilities: {
@@ -201,6 +260,7 @@ const server = new Server(
 // Combine all tools
 const allTools = [
   ...projectTools,
+  ...projectSettingsTools,
   ...accountTools,
   ...visibilityTools,
   ...auditTools,
@@ -209,6 +269,7 @@ const allTools = [
   ...usageTools,
   ...calendarTools,
   ...strategyTools,
+  ...strategyStepTools,
   ...contentGenerationTools,
   ...sourcesTools,
   ...indexingTools,
@@ -219,6 +280,12 @@ const allTools = [
   ...analyticsQueryTools,
   ...reportsTools,
   ...actionGridTools,
+  ...agentAnalyticsTools,
+  ...trackingTools,
+  ...competitorTools,
+  ...redditTools,
+  ...ga4Tools,
+  ...seoAlertTools,
 ];
 
 /**
@@ -249,6 +316,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case 'get_active_project':
         result = await getActiveProject(apiClient, args || {});
+        break;
+      
+      // Project settings tools
+      case 'get_project_settings':
+        result = await getProjectSettings(apiClient, args as any);
+        break;
+      case 'update_project_settings':
+        result = await updateProjectSettings(apiClient, args as any);
         break;
       
       // Account tools
@@ -325,6 +400,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case 'update_content_item_status':
         result = await updateContentItemStatus(apiClient, args as any);
+        break;
+      
+      // Strategy step tools
+      case 'generate_strategy_step':
+        result = await generateStrategyStep(apiClient, args as any);
+        break;
+      case 'get_strategy_step_output':
+        result = await getStrategyStepOutput(apiClient, args as any);
+        break;
+      case 'edit_strategy_step':
+        result = await editStrategyStep(apiClient, args as any);
+        break;
+      case 'get_strategy_step_map':
+        result = await getStrategyStepMap();
         break;
       
       // Content generation tools
@@ -459,6 +548,57 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case 'update_grid_item':
         result = await updateGridItem(apiClient, args as any);
+        break;
+
+      // Agent analytics tools
+      case 'get_agent_analytics':
+        result = await getAgentAnalytics(apiClient, args as any);
+        break;
+
+      // Site tracking tools
+      case 'get_ai_referral_performance':
+        result = await getAiReferralPerformance(apiClient, args as any);
+        break;
+      case 'get_page_citations':
+        result = await getPageCitations(apiClient, args as any);
+        break;
+      case 'get_webflow_tracking':
+        result = await getWebflowTracking(apiClient, args as any);
+        break;
+      case 'get_wix_tracking':
+        result = await getWixTracking(apiClient, args as any);
+        break;
+
+      // Competitor tools
+      case 'list_competitors':
+        result = await listCompetitors(apiClient, args as any);
+        break;
+      case 'add_competitor':
+        result = await addCompetitor(apiClient, args as any);
+        break;
+      case 'delete_competitor':
+        result = await deleteCompetitor(apiClient, args as any);
+        break;
+
+      // Reddit tools
+      case 'list_reddit_monitors':
+        result = await listRedditMonitors(apiClient, args as any);
+        break;
+      case 'get_reddit_leads':
+        result = await getRedditLeads(apiClient, args as any);
+        break;
+      case 'update_reddit_lead':
+        result = await updateRedditLead(apiClient, args as any);
+        break;
+
+      // GA4 tools
+      case 'get_ga4_analytics':
+        result = await getGA4Analytics(apiClient, args as any);
+        break;
+
+      // SEO alerts tools
+      case 'get_seo_alerts':
+        result = await getSeoAlerts(apiClient, args as any);
         break;
       
       default:

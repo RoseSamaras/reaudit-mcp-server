@@ -6,6 +6,10 @@ tests/
 tsconfig.json
 .github/
 
+# Scripts and docs
+scripts/
+MCP_DEPLOYMENT_GUIDE.md
+
 # Development files
 *.log
 .env*
