@@ -34,6 +34,25 @@ export const getContentDetailsSchema = z.object({
   includeSchema: z.boolean().optional().describe('Include full JSON-LD schema markup (default: false, saves tokens)'),
 });
 
+export const editContentSchema = z.object({
+  contentId: z.string().describe('The ID of the content to edit'),
+  title: z.string().optional().describe('New title for the content'),
+  content: z.string().optional().describe('New HTML body content'),
+  excerpt: z.string().optional().describe('New excerpt/summary'),
+  metaTitle: z.string().optional().describe('New SEO meta title'),
+  metaDescription: z.string().optional().describe('New SEO meta description'),
+  focusKeyphrase: z.string().optional().describe('New focus keyphrase'),
+  slug: z.string().optional().describe('New URL slug'),
+  suggestedTags: z.array(z.string()).optional().describe('New tags array'),
+  suggestedCategories: z.array(z.string()).optional().describe('New categories array'),
+  featuredImage: z.string().optional().describe('Featured image URL'),
+  author: z.string().optional().describe('Author name'),
+});
+
+export const deleteContentSchema = z.object({
+  contentId: z.string().describe('The ID of the content to delete'),
+});
+
 /**
  * Generate content tool handler
  */
@@ -285,6 +304,66 @@ export async function getContentDetails(
 }
 
 /**
+ * Edit content tool handler
+ */
+export async function editContent(
+  client: ReauditAPIClient,
+  args: z.infer<typeof editContentSchema>
+): Promise<string> {
+  const { contentId, ...updates } = args;
+  
+  // Filter out undefined values
+  const filteredUpdates: Record<string, any> = {};
+  for (const [key, value] of Object.entries(updates)) {
+    if (value !== undefined) {
+      filteredUpdates[key] = value;
+    }
+  }
+  
+  if (Object.keys(filteredUpdates).length === 0) {
+    return 'No fields provided to update. Provide at least one field: title, content, excerpt, metaTitle, metaDescription, focusKeyphrase, slug, suggestedTags, suggestedCategories, featuredImage, or author.';
+  }
+  
+  const result = await client.updateContent(contentId, filteredUpdates);
+  const content = result.content;
+  
+  let response = `## Content Updated Successfully!\n\n`;
+  response += `### ${content.title}\n\n`;
+  response += `- **ID:** ${content.id}\n`;
+  response += `- **Updated Fields:** ${Object.keys(filteredUpdates).join(', ')}\n`;
+  response += `- **Word Count:** ${content.wordCount}\n`;
+  
+  if (content.seoScore) response += `- **SEO Score:** ${content.seoScore}/100\n`;
+  if (content.readabilityScore) response += `- **Readability Score:** ${content.readabilityScore}/100\n`;
+  
+  response += `\n### SEO\n`;
+  response += `- **Meta Title:** ${content.metaTitle || content.title}\n`;
+  response += `- **Meta Description:** ${content.metaDescription}\n`;
+  response += `- **Slug:** ${content.slug}\n`;
+  
+  if (content.suggestedTags && content.suggestedTags.length > 0) {
+    response += `\n### Tags\n`;
+    response += content.suggestedTags.join(', ') + '\n';
+  }
+  
+  response += `\n---\n`;
+  response += `Use \`get_content_details\` with ID \`${content.id}\` to retrieve the full updated content.`;
+  
+  return response;
+}
+
+/**
+ * Delete content tool handler
+ */
+export async function deleteContent(
+  client: ReauditAPIClient,
+  args: z.infer<typeof deleteContentSchema>
+): Promise<string> {
+  const result = await client.deleteContent(args.contentId);
+  return `## Content Deleted\n\n${result.message}\n\n- **Deleted ID:** ${result.deletedId}`;
+}
+
+/**
  * Tool definitions for MCP
  */
 export const contentGenerationTools = [
@@ -382,6 +461,80 @@ export const contentGenerationTools = [
         includeSchema: {
           type: 'boolean',
           description: 'Include full JSON-LD schema markup (default: false, saves ~40% tokens)',
+        },
+      },
+      required: ['contentId'],
+    },
+  },
+  {
+    name: 'edit_content',
+    description: 'Edit an existing generated content article. Update title, body content (HTML), excerpt, SEO meta fields, tags, categories, slug, featured image, or author. Markdown content is auto-regenerated when HTML body is updated.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        contentId: {
+          type: 'string',
+          description: 'The ID of the content to edit',
+        },
+        title: {
+          type: 'string',
+          description: 'New title for the content',
+        },
+        content: {
+          type: 'string',
+          description: 'New HTML body content',
+        },
+        excerpt: {
+          type: 'string',
+          description: 'New excerpt/summary',
+        },
+        metaTitle: {
+          type: 'string',
+          description: 'New SEO meta title',
+        },
+        metaDescription: {
+          type: 'string',
+          description: 'New SEO meta description',
+        },
+        focusKeyphrase: {
+          type: 'string',
+          description: 'New focus keyphrase',
+        },
+        slug: {
+          type: 'string',
+          description: 'New URL slug',
+        },
+        suggestedTags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'New tags array',
+        },
+        suggestedCategories: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'New categories array',
+        },
+        featuredImage: {
+          type: 'string',
+          description: 'Featured image URL',
+        },
+        author: {
+          type: 'string',
+          description: 'Author name',
+        },
+      },
+      required: ['contentId'],
+    },
+  },
+  {
+    name: 'delete_content',
+    description: 'Delete a generated content article permanently. This action cannot be undone.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        contentId: {
+          type: 'string',
+          description: 'The ID of the content to delete',
         },
       },
       required: ['contentId'],

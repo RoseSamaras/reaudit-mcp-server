@@ -12,22 +12,31 @@ The MCP server source lives inside the main Reaudit monorepo at `mcp-server/`, b
 
 The publish script syncs files from the monorepo to the standalone GitHub repo, then publishes to npm.
 
-## Quick Start
+## Quick Start (Two-Step Process)
+
+**npm publish requires browser-based 2FA, which only works from a real terminal (iTerm/Terminal.app). Cursor's integrated terminal cannot open the browser, so the publish must be split into two steps.**
+
+### Step 1: Push to GitHub (from Cursor)
 
 ```bash
 cd mcp-server
+./scripts/publish.sh --github-only patch   # or minor / major / 1.2.3
+```
 
-# Patch release (1.0.0 → 1.0.1)
-./scripts/publish.sh patch
+### Step 2: Publish to npm (from iTerm / Terminal.app)
 
-# Minor release (1.0.1 → 1.1.0)
-./scripts/publish.sh minor
+```bash
+cd "/Users/rosesamaras/Cursor projects/airanking/mcp-server"
+npm publish --access public --auth-type=web
+```
 
-# Major release (1.1.0 → 2.0.0)
-./scripts/publish.sh major
+This opens a browser tab → click **"Authenticate"** → done.
 
-# Explicit version
-./scripts/publish.sh 1.2.3
+### All-in-one (only from a real terminal, NOT Cursor)
+
+```bash
+cd mcp-server
+./scripts/publish.sh patch   # or minor / major / 1.2.3
 ```
 
 ## What the Script Does
@@ -36,15 +45,15 @@ cd mcp-server
 2. **Builds** TypeScript (`npm run build`)
 3. **Type-checks** (`tsc --noEmit`)
 4. **Syncs to GitHub** — copies files to a staging directory, commits, and pushes to the standalone repo with a version tag
-5. **Publishes to npm** — runs `npm publish --access public` (opens browser for 2FA if needed)
+5. **Publishes to npm** — runs `npm publish --access public --auth-type=web` (opens browser for 2FA)
 
 ## Partial Releases
 
 ```bash
-# Push to GitHub only (no npm publish)
+# Push to GitHub only (no npm publish) — works from Cursor
 ./scripts/publish.sh --github-only patch
 
-# Publish to npm only (no GitHub push, uses current version)
+# Publish to npm only (no GitHub push, uses current version) — must use real terminal
 ./scripts/publish.sh --npm-only
 ```
 
@@ -139,10 +148,12 @@ Run `npm login --auth-type=web` to re-authenticate.
 The version already exists on npm. Bump the version first: `npm version patch --no-git-tag-version`
 
 ### "This operation requires a one-time password"
-The script uses `--auth-type=web` which opens your browser instead of asking for OTP. If that doesn't work, generate an access token at https://www.npmjs.com/settings/reaudit/tokens and use:
+This means npm couldn't open a browser for 2FA. **You are probably running from Cursor's terminal.** Switch to iTerm / Terminal.app and run:
 ```bash
-npm publish --access public --otp=YOUR_CODE
+cd "/Users/rosesamaras/Cursor projects/airanking/mcp-server"
+npm publish --access public --auth-type=web
 ```
+A browser tab will open — click "Authenticate" and npm will complete the publish.
 
 ### CI workflow failing
 The GitHub CI uses `npm install` (not `npm ci`), so no `package-lock.json` is needed. If CI fails, check the GitHub Actions tab for details.

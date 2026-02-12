@@ -1015,6 +1015,29 @@ export class ReauditAPIClient {
     return this.request('GET', `/content/${contentId}`);
   }
   
+  async updateContent(
+    contentId: string,
+    updates: {
+      title?: string;
+      content?: string;
+      excerpt?: string;
+      metaTitle?: string;
+      metaDescription?: string;
+      focusKeyphrase?: string;
+      slug?: string;
+      suggestedTags?: string[];
+      suggestedCategories?: string[];
+      featuredImage?: string;
+      author?: string;
+    }
+  ): Promise<{ message: string; content: GeneratedContent }> {
+    return this.request('PATCH', `/content/${contentId}`, updates);
+  }
+  
+  async deleteContent(contentId: string): Promise<{ message: string; deletedId: string }> {
+    return this.request('DELETE', `/content/${contentId}`);
+  }
+  
   // ============ Sources & Outreach ============
   
   async getCitationSources(

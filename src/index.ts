@@ -105,6 +105,8 @@ import {
   generateContent,
   getContentHistory,
   getContentDetails,
+  editContent,
+  deleteContent,
 } from './tools/content-generation.js';
 
 // Sources & outreach tools
@@ -425,6 +427,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case 'get_content_details':
         result = await getContentDetails(apiClient, args as any);
+        break;
+      case 'edit_content':
+        result = await editContent(apiClient, args as any);
+        break;
+      case 'delete_content':
+        result = await deleteContent(apiClient, args as any);
         break;
       
       // Sources & outreach tools
