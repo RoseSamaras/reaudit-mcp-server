@@ -160,11 +160,11 @@ export async function publishToReact(
   }
   response += `- **Webhook Sent:** ${result.webhookSent ? '✅ Yes' : '⚠️ No webhook URL configured'}\n`;
   
-  response += `\n✅ Content marked as published. `;
+  response += `\n✅ Content published. `;
   if (result.webhookSent) {
-    response += `Your site has been notified via webhook with a download URL to fetch the content.`;
+    response += `Full article content sent to your site via webhook. Store it locally on your domain.`;
   } else {
-    response += `Configure a webhook URL in your React connection to receive notifications.`;
+    response += `Configure a webhook URL in your React connection to receive content automatically.`;
   }
   
   return response;
@@ -226,7 +226,7 @@ export const publishingTools = [
   },
   {
     name: 'publish_to_react',
-    description: 'Publish content via webhook to a React/Next.js site. Sends a notification with a download URL for the content.',
+    description: "Publish content via webhook to a React/Next.js site. Sends the full article content directly to the site's webhook endpoint for local storage.",
     inputSchema: {
       type: 'object' as const,
       properties: {
