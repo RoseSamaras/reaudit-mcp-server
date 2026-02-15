@@ -232,6 +232,15 @@ import {
   getSeoAlerts,
 } from './tools/seo-alerts.js';
 
+// Bing Webmaster Tools
+import {
+  bingWebmasterTools,
+  getBingSearchPerformance,
+  getBingCrawlHealth,
+  submitUrlsToBing,
+  getBingBacklinks,
+} from './tools/bing-webmaster.js';
+
 // Prompts
 import { mcpPrompts, generatePromptContent } from './prompts/index.js';
 
@@ -288,6 +297,7 @@ const allTools = [
   ...redditTools,
   ...ga4Tools,
   ...seoAlertTools,
+  ...bingWebmasterTools,
 ];
 
 /**
@@ -607,6 +617,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       // SEO alerts tools
       case 'get_seo_alerts':
         result = await getSeoAlerts(apiClient, args as any);
+        break;
+
+      // Bing Webmaster tools
+      case 'get_bing_search_performance':
+        result = await getBingSearchPerformance(apiClient, args as any);
+        break;
+      case 'get_bing_crawl_health':
+        result = await getBingCrawlHealth(apiClient, args as any);
+        break;
+      case 'submit_urls_to_bing':
+        result = await submitUrlsToBing(apiClient, args as any);
+        break;
+      case 'get_bing_backlinks':
+        result = await getBingBacklinks(apiClient, args as any);
         break;
       
       default:

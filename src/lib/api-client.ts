@@ -1685,6 +1685,83 @@ export class ReauditAPIClient {
     return this.request('GET', '/alerts', undefined, { type });
   }
 
+  // ============ Bing Webmaster Tools ============
+
+  /**
+   * Get Bing search performance data (traffic stats, top queries, top pages)
+   */
+  async getBingSearchPerformance(projectId: string): Promise<{
+    siteUrl: string;
+    trafficStats: Array<{
+      Date: string;
+      Impressions: number;
+      Clicks: number;
+      AvgImpressionPosition: number;
+      AvgClickPosition: number;
+    }>;
+    queryStats: Array<{
+      Query: string;
+      Impressions: number;
+      Clicks: number;
+      AvgImpressionPosition: number;
+      AvgClickPosition: number;
+    }>;
+    pageStats: Array<{
+      Query: string;
+      Impressions: number;
+      Clicks: number;
+      AvgImpressionPosition: number;
+      AvgClickPosition: number;
+    }>;
+  }> {
+    return this.request('GET', '/bing-webmaster', undefined, { projectId, type: 'performance' });
+  }
+
+  /**
+   * Get Bing crawl health data (crawl stats and issues)
+   */
+  async getBingCrawlHealth(projectId: string): Promise<{
+    siteUrl: string;
+    crawlStats: Array<{
+      Date: string;
+      CrawledPages: number;
+      InIndex: number;
+      CrawlErrors: number;
+    }>;
+    crawlIssues: Array<{
+      Url: string;
+      HttpCode: number;
+      Issue: string;
+      DateDetected: string;
+    }>;
+  }> {
+    return this.request('GET', '/bing-webmaster', undefined, { projectId, type: 'crawl' });
+  }
+
+  /**
+   * Get Bing backlink data
+   */
+  async getBingBacklinks(projectId: string): Promise<{
+    siteUrl: string;
+    linkCounts: Array<{
+      Url: string;
+      LinkCount: number;
+    }>;
+  }> {
+    return this.request('GET', '/bing-webmaster', undefined, { projectId, type: 'backlinks' });
+  }
+
+  /**
+   * Submit URLs to Bing for indexing
+   */
+  async submitUrlsToBing(projectId: string, urls: string[]): Promise<{
+    siteUrl: string;
+    submitted: number;
+    message: string;
+  }> {
+    return this.request('POST', '/bing-webmaster', { projectId, urls });
+  }
+
   // ============ Auth ============
   
   isAuthenticated(): boolean {
