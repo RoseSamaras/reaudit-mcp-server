@@ -241,6 +241,15 @@ import {
   getBingBacklinks,
 } from './tools/bing-webmaster.js';
 
+// Analytics Hub tools (unified dashboard + alerts)
+import {
+  analyticsHubTools,
+  getAnalyticsHub,
+  listAnalyticsAlerts,
+  createAnalyticsAlert,
+  deleteAnalyticsAlert,
+} from './tools/analytics-hub.js';
+
 // Prompts
 import { mcpPrompts, generatePromptContent } from './prompts/index.js';
 
@@ -257,7 +266,7 @@ const apiClient = new ReauditAPIClient(BASE_URL);
 const server = new Server(
   {
     name: 'reaudit-mcp-server',
-    version: '1.3.0',
+    version: '1.3.2',
   },
   {
     capabilities: {
@@ -298,6 +307,7 @@ const allTools = [
   ...ga4Tools,
   ...seoAlertTools,
   ...bingWebmasterTools,
+  ...analyticsHubTools,
 ];
 
 /**
@@ -631,6 +641,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case 'get_bing_backlinks':
         result = await getBingBacklinks(apiClient, args as any);
+        break;
+
+      // Analytics Hub tools
+      case 'get_analytics_hub':
+        result = await getAnalyticsHub(apiClient, args as any);
+        break;
+      case 'list_analytics_alerts':
+        result = await listAnalyticsAlerts(apiClient, args as any);
+        break;
+      case 'create_analytics_alert':
+        result = await createAnalyticsAlert(apiClient, args as any);
+        break;
+      case 'delete_analytics_alert':
+        result = await deleteAnalyticsAlert(apiClient, args as any);
         break;
       
       default:

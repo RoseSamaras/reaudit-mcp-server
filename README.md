@@ -452,6 +452,20 @@ Read-only data accessible via `reaudit://` URIs:
 
 ## Troubleshooting
 
+### "Failed to spawn process: No such file or directory"
+
+This is the most common setup issue. It has two possible causes:
+
+**1. Node.js is not installed.** The Reaudit MCP server requires [Node.js 18+](https://nodejs.org). Check by running `node --version` in your terminal.
+
+**2. Node.js is installed but not in your MCP client's PATH.** Apps like Claude Desktop and Cursor use a restricted system PATH that may not include the directory where Node.js is installed. Fix this by using the full absolute path to `npx`:
+
+1. Run `which npx` in your terminal to get the full path
+2. Replace `"command": "npx"` with the full path in your config, e.g. `"command": "/usr/local/bin/npx"`
+3. Fully restart your MCP client (on macOS, quit from the menu bar — don't just close the window)
+
+Common npx paths: `/usr/local/bin/npx` (default), `/opt/homebrew/bin/npx` (Homebrew on macOS), `~/.nvm/versions/node/vX.X.X/bin/npx` (nvm)
+
 ### "Authentication required" error
 
 The MCP server needs to authenticate with your Reaudit account. Make sure:

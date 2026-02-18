@@ -1762,6 +1762,56 @@ export class ReauditAPIClient {
     return this.request('POST', '/bing-webmaster', { projectId, urls });
   }
 
+  // ============ Analytics Hub ============
+
+  /**
+   * Get unified analytics hub data across all connected sources
+   */
+  async getAnalyticsHub(projectId: string, params?: {
+    startDate?: string;
+    endDate?: string;
+    section?: string;
+    compareStartDate?: string;
+    compareEndDate?: string;
+  }): Promise<Record<string, unknown>> {
+    return this.request('GET', '/analytics-hub', undefined, {
+      projectId,
+      ...(params?.startDate && { startDate: params.startDate }),
+      ...(params?.endDate && { endDate: params.endDate }),
+      ...(params?.section && { section: params.section }),
+      ...(params?.compareStartDate && { compareStartDate: params.compareStartDate }),
+      ...(params?.compareEndDate && { compareEndDate: params.compareEndDate }),
+    });
+  }
+
+  /**
+   * List analytics alerts for a project
+   */
+  async getAnalyticsAlerts(projectId: string): Promise<{ alerts: Array<Record<string, unknown>> }> {
+    return this.request('GET', '/analytics-hub/alerts', undefined, { projectId });
+  }
+
+  /**
+   * Create an analytics alert
+   */
+  async createAnalyticsAlert(params: {
+    projectId: string;
+    name: string;
+    metric: string;
+    condition: string;
+    threshold: number;
+    source: string;
+  }): Promise<{ alert: Record<string, unknown> }> {
+    return this.request('POST', '/analytics-hub/alerts', params);
+  }
+
+  /**
+   * Delete an analytics alert
+   */
+  async deleteAnalyticsAlert(alertId: string): Promise<{ success: boolean }> {
+    return this.request('DELETE', '/analytics-hub/alerts', { alertId });
+  }
+
   // ============ Auth ============
   
   isAuthenticated(): boolean {
